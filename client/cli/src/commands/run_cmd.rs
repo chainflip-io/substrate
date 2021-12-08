@@ -127,6 +127,10 @@ pub struct RunCmd {
 	#[structopt(long = "ws-max-connections", value_name = "COUNT")]
 	pub ws_max_connections: Option<usize>,
 
+	/// Set the the maximum WebSocket output buffer size in MiB. Default is 16.
+	#[structopt(long = "ws-max-out-buffer-capacity")]
+	pub ws_max_out_buffer_capacity: Option<usize>,
+
 	/// Size of the RPC HTTP server thread pool.
 	#[structopt(long = "rpc-http-threads", value_name = "COUNT")]
 	pub rpc_http_threads: Option<usize>,
@@ -438,6 +442,10 @@ impl CliConfiguration for RunCmd {
 
 	fn rpc_max_payload(&self) -> Result<Option<usize>> {
 		Ok(self.rpc_max_payload)
+	}
+
+	fn ws_max_out_buffer_capacity(&self) -> Result<Option<usize>> {
+		Ok(self.ws_max_out_buffer_capacity)
 	}
 
 	fn transaction_pool(&self) -> Result<TransactionPoolOptions> {
