@@ -1284,6 +1284,8 @@ where
 	// FIXME #1483: clone only when changed
 	let old_authority_set = authority_set.clone();
 
+	println!("Old authority set: {:?}", old_authority_set);
+
 	let update_res: Result<_, Error> = client.lock_import_and_run(|import_op| {
 		let status = authority_set
 			.apply_standard_changes(
@@ -1333,6 +1335,8 @@ where
 					}
 				}
 
+				println!("justification_required: {:?}", justification_required);
+				println!("commit: {:?}", commit);
 				let justification =
 					GrandpaJustification::from_commit(&client, round_number, commit)?;
 
