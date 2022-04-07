@@ -552,6 +552,11 @@ where
 			Some(proof) => proof,
 			None => {
 				debug!(target: "afg", "Equivocation offender is not part of the authority set.");
+				println!("Blockhash: {}, set_id: {}, offender: {}",
+					current_set_latest_hash,
+					authority_set.set_id,
+					equivocation.offender(),
+				);
 				return Ok(())
 			},
 		};
