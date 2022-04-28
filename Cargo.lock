@@ -1797,8 +1797,7 @@ dependencies = [
 [[package]]
 name = "finality-grandpa"
 version = "0.14.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "74a1bfdcc776e63e49f741c7ce6116fa1b887e8ac2e3ccb14dd4aa113e54feb9"
+source = "git+https://github.com/chainflip-io/finality-grandpa.git?tag=chainflip-v0.14.1#f594febef91a8ae2771ac1b72f87984d203467c3"
 dependencies = [
  "either",
  "futures 0.3.16",
