@@ -138,11 +138,21 @@ pub struct NetworkSchemeFlag {
 		short = 'n',
 		long,
 		value_name = "NETWORK",
-		possible_values = &Ss58AddressFormat::all_names()[..],
 		ignore_case = true,
-		parse(try_from_str = Ss58AddressFormat::try_from),
+		parse(try_from_str = lookup_or_parse),
 	)]
 	pub network: Option<Ss58AddressFormat>,
+}
+
+fn lookup_or_parse(input: &str) -> Result<Ss58AddressFormat, &'static str> {
+	Ss58AddressFormat::try_from(input)
+		.or_else(|_| u16::from_str(input).map(Into::into))
+		.or_else(|_| {
+			let mut x = [0u8; 2];
+			hex::decode_to_slice(input, &mut x[..])?;
+			Ok(u16::from_be_bytes(x).into())
+		})
+		.map_err(|_: hex::FromHexError| "error: invalid network scheme")
 }
 
 #[cfg(test)]
