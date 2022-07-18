@@ -138,14 +138,19 @@ pub struct NetworkSchemeFlag {
 		short = 'n',
 		long,
 		value_name = "NETWORK",
+		possible_values = [Ss58AddressFormat::all_names(), &["chainflip"][..]].concat(),
 		ignore_case = true,
 		parse(try_from_str = lookup_or_parse),
 	)]
 	pub network: Option<Ss58AddressFormat>,
 }
 
+// Temporary until this makes it into the prefix registry.
+const CHAINFLIP_PREFIX: u16 = 2112;
+
 fn lookup_or_parse(input: &str) -> Result<Ss58AddressFormat, &'static str> {
 	Ss58AddressFormat::try_from(input)
+		.or_else(|_| if input == "chainflip" { Ok(CHAINFLIP_PREFIX.into()) } else { Err(input) })
 		.or_else(|_| {
 			let mut x = [0u8; 2];
 			hex::decode_to_slice(input, &mut x[..])?;
