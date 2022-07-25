@@ -185,6 +185,44 @@ where
 	) -> RpcResult<bool> {
 		Ok(self.subscriptions().cancel(id))
 	}
+
+	/// Finalized block headers subscription.
+	///
+	/// Returns headers of all blocks that have been finalized, rather than just the latest.
+	fn subscribe_new_finalized_block_headers(
+		&'static self,
+		_metadata: crate::Metadata,
+		subscriber: Subscriber<Block::Header>,
+	) {
+		subscribe_headers(
+			self.client(),
+			self.subscriptions(),
+			subscriber,
+			|| self.client().info().finalized_hash,
+			|| {
+				self.client().finality_notification_stream().flat_map(|notification| {
+					let new_block_hashes =
+						notification.tree_route.iter().skip(1).cloned().collect::<Vec<_>>();
+					stream::iter(new_block_hashes)
+						.then(|block_hash| self.header(Some(block_hash)))
+						.map(|res| {
+							res.map(|header| {
+								header.expect("header retrieved via tree_route must be available")
+							})
+							.map_err(|e| e.into())
+						})
+				})
+			},
+		)
+	}
+
+	fn unsubscribe_new_finalized_block_headers(
+		&self,
+		_metadata: Option<crate::Metadata>,
+		id: SubscriptionId,
+	) -> RpcResult<bool> {
+		Ok(self.subscriptions().cancel(id))
+	}
 }
 
 /// Create new state API that works on full node.
