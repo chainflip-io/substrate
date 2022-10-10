@@ -88,6 +88,7 @@ where
 	let mut best = 0;
 	let mut seed = Pair::Seed::default();
 	let mut done = 0;
+	let mut best_match: Option<(String, Pair::Seed)> = None;
 
 	loop {
 		if done % 100000 == 0 {
@@ -101,6 +102,7 @@ where
 		let score = calculate_score(&desired, &ss58);
 		if score > best || desired.len() < 2 {
 			best = score;
+			best_match.replace((ss58, seed.clone()));
 			if best >= top {
 				println!("best: {} == top: {}", best, top);
 				return Ok(utils::format_seed::<Pair>(seed.clone()))
@@ -109,7 +111,17 @@ where
 		done += 1;
 
 		if done % good_waypoint(done) == 0 {
-			println!("{} keys searched; best is {}/{} complete", done, best, top);
+			println!(
+				"{} keys searched; best is {}/{} complete: {}",
+				done,
+				best,
+				top,
+				match best_match {
+					Some((ref ss58, ref seed)) =>
+						format!("{}, ({})", ss58.as_str(), utils::format_seed::<Pair>(seed.clone())),
+					None => String::from("None"),
+				},
+			);
 		}
 	}
 }
