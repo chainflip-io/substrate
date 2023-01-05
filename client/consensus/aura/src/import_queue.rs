@@ -254,7 +254,8 @@ where
 
 					inherent_data.aura_replace_inherent_data(slot);
 
-					// skip the inherents verification if the runtime API is old.
+					// skip the inherents verification if the runtime API is old or not expected to
+					// exist.
 					if self
 						.client
 						.runtime_api()
