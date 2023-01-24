@@ -305,6 +305,7 @@ where
 
 				block.header = pre_header;
 				block.post_digests.push(seal);
+				block.fork_choice = Some(ForkChoiceStrategy::LongestChain);
 				block.post_hash = Some(hash);
 
 				Ok((block, maybe_keys))
