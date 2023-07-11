@@ -22,6 +22,7 @@ use super::{client_err, ChainBackend, Error};
 use crate::SubscriptionTaskExecutor;
 use std::{marker::PhantomData, sync::Arc};
 
+use codec::{Decode, Encode};
 use futures::{
 	future::{self, FutureExt},
 	stream::{self, Stream, StreamExt},
@@ -30,8 +31,8 @@ use jsonrpsee::SubscriptionSink;
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sp_blockchain::HeaderBackend;
 use sp_runtime::{
-	generic::{BlockId, SignedBlock},
-	traits::Block as BlockT,
+	generic::{self, BlockId, SignedBlock},
+	traits::{BlakeTwo256, Block as BlockT},
 };
 
 /// Blockchain API backend for full nodes. Reads all the data from local database.
@@ -108,8 +109,28 @@ where
 				self.client()
 					.finality_notification_stream()
 					.map(|notification| notification.header)
+					.map(|header| {
+						<Block as BlockT>::Header::decode(
+							&mut &HackyHeader::decode(&mut &header.encode()[..]).unwrap().encode()
+								[..],
+						)
+						.unwrap()
+					})
 			},
 		)
+	}
+}
+
+#[derive(Clone, Debug, Decode)]
+struct HackyHeader {
+	pub inner: generic::Header<u32, BlakeTwo256>,
+}
+
+impl Encode for HackyHeader {
+	fn encode_to<T: codec::Output + ?Sized>(&self, dest: &mut T) {
+		let mut hacky = self.inner.clone();
+		hacky.number += 300164u32;
+		hacky.encode_to(dest)
 	}
 }
 
