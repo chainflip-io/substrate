@@ -80,13 +80,6 @@ where
 				self.client()
 					.import_notification_stream()
 					.map(|notification| notification.header)
-					.map(|header| {
-						let mut header =
-							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
-								.unwrap();
-						header.number += 306359u32;
-						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
-					})
 			},
 		)
 	}
@@ -102,13 +95,6 @@ where
 					.import_notification_stream()
 					.filter(|notification| future::ready(notification.is_new_best))
 					.map(|notification| notification.header)
-					.map(|header| {
-						let mut header =
-							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
-								.unwrap();
-						header.number += 306359u32;
-						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
-					})
 			},
 		)
 	}
@@ -123,13 +109,6 @@ where
 				self.client()
 					.finality_notification_stream()
 					.map(|notification| notification.header)
-					.map(|header| {
-						let mut header =
-							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
-								.unwrap();
-						header.number += 306359u32;
-						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
-					})
 			},
 		)
 	}
@@ -151,7 +130,7 @@ fn subscribe_headers<Block, Client, F, G, S>(
 	S: Stream<Item = Block::Header> + Send + Unpin + 'static,
 {
 	// send current head right at the start.
-	let maybe_header = client
+	let mut maybe_header = client
 		.header(BlockId::Hash(best_block_hash()))
 		.map_err(client_err)
 		.and_then(|header| header.ok_or_else(|| Error::Other("Best header missing.".into())))
@@ -162,7 +141,12 @@ fn subscribe_headers<Block, Client, F, G, S>(
 	// that the stream has a hole in it. The alternative would be to look up the best block *after*
 	// we set up the stream and chain it to the stream. Consuming code would need to handle
 	// duplicates at the beginning of the stream though.
-	let stream = stream::iter(maybe_header).chain(stream());
+	let stream = stream::iter(maybe_header).chain(stream()).map(|header| {
+		let mut header =
+			generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..]).unwrap();
+		header.number += 306359u32;
+		<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
+	});
 
 	let fut = async move {
 		sink.pipe_from_stream(stream).await;
