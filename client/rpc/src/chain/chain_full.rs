@@ -129,7 +129,7 @@ struct HackyHeader {
 impl Encode for HackyHeader {
 	fn encode_to<T: codec::Output + ?Sized>(&self, dest: &mut T) {
 		let mut hacky = self.inner.clone();
-		hacky.number += 300164u32;
+		hacky.number += 306359u32;
 		hacky.encode_to(dest)
 	}
 }
