@@ -80,6 +80,13 @@ where
 				self.client()
 					.import_notification_stream()
 					.map(|notification| notification.header)
+					.map(|header| {
+						let mut header =
+							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
+								.unwrap();
+						header.number += 306359u32;
+						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
+					})
 			},
 		)
 	}
@@ -95,6 +102,13 @@ where
 					.import_notification_stream()
 					.filter(|notification| future::ready(notification.is_new_best))
 					.map(|notification| notification.header)
+					.map(|header| {
+						let mut header =
+							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
+								.unwrap();
+						header.number += 306359u32;
+						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
+					})
 			},
 		)
 	}
@@ -110,27 +124,14 @@ where
 					.finality_notification_stream()
 					.map(|notification| notification.header)
 					.map(|header| {
-						<Block as BlockT>::Header::decode(
-							&mut &HackyHeader::decode(&mut &header.encode()[..]).unwrap().encode()
-								[..],
-						)
-						.unwrap()
+						let mut header =
+							generic::Header::<u32, BlakeTwo256>::decode(&mut &header.encode()[..])
+								.unwrap();
+						header.number += 306359u32;
+						<Block as BlockT>::Header::decode(&mut &header.encode()[..]).unwrap()
 					})
 			},
 		)
-	}
-}
-
-#[derive(Clone, Debug, Decode)]
-struct HackyHeader {
-	pub inner: generic::Header<u32, BlakeTwo256>,
-}
-
-impl Encode for HackyHeader {
-	fn encode_to<T: codec::Output + ?Sized>(&self, dest: &mut T) {
-		let mut hacky = self.inner.clone();
-		hacky.number += 306359u32;
-		hacky.encode_to(dest)
 	}
 }
 
